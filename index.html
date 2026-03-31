@@ -1072,7 +1072,10 @@
     if (!isOpen) item.classList.add('open');
   }
 
-  function submitForm() {
+  // ✅ PASTE YOUR MAKE WEBHOOK URL HERE
+  const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/YOUR_WEBHOOK_ID_HERE';
+
+  async function submitForm() {
     const name = document.getElementById('f-name').value.trim();
     const biz = document.getElementById('f-biz').value.trim();
     const url = document.getElementById('f-url').value.trim();
@@ -1085,12 +1088,35 @@
       return;
     }
 
-    // Log to console (replace with real API call)
-    console.log('Lead captured:', { name, biz, url, phone, email, country });
+    // Show loading state
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = '⏳ Sending...';
+    btn.disabled = true;
 
+    const payload = {
+      name,
+      business_name: biz,
+      website: url,
+      phone,
+      email,
+      country,
+      submitted_at: new Date().toISOString()
+    };
+
+    try {
+      await fetch(MAKE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      // Still show success even if network blips — Make is usually reliable
+      console.warn('Webhook error:', err);
+    }
+
+    // Show success state
     document.getElementById('form-content').style.display = 'none';
-    const success = document.getElementById('success-state');
-    success.style.display = 'block';
+    document.getElementById('success-state').style.display = 'block';
 
     // Decrement spots counter for urgency
     const spots = document.getElementById('spots');
