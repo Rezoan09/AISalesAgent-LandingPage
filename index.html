@@ -1072,9 +1072,6 @@
     if (!isOpen) item.classList.add('open');
   }
 
-  // ✅ PASTE YOUR MAKE WEBHOOK URL HERE
-  const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/za06ox9cjejktgnlw3oer1zxbavpbi3i';
-
   async function submitForm() {
     const name = document.getElementById('f-name').value.trim();
     const biz = document.getElementById('f-biz').value.trim();
@@ -1088,37 +1085,29 @@
       return;
     }
 
-    // Show loading state
     const btn = document.querySelector('.submit-btn');
     btn.textContent = '⏳ Sending...';
     btn.disabled = true;
 
-    const payload = {
-      name,
-      business_name: biz,
-      website: url,
-      phone,
-      email,
-      country,
-      submitted_at: new Date().toISOString()
-    };
-
     try {
-      await fetch(MAKE_WEBHOOK_URL, {
+      await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          access_key: '0e6b1a08-e882-4661-85d1-8af10946e608',
+          subject: 'New Demo Request: ' + name + ' from ' + biz,
+          from_name: name,
+          email: email,
+          message: 'New Demo Request\n\nName:      ' + name + '\nBusiness:  ' + biz + '\nWebsite:   ' + url + '\nPhone:     ' + phone + '\nEmail:     ' + email + '\nCountry:   ' + country + '\nSubmitted: ' + new Date().toLocaleString()
+        })
       });
     } catch (err) {
-      // Still show success even if network blips — Make is usually reliable
-      console.warn('Webhook error:', err);
+      console.warn('Submission error:', err);
     }
 
-    // Show success state
     document.getElementById('form-content').style.display = 'none';
     document.getElementById('success-state').style.display = 'block';
 
-    // Decrement spots counter for urgency
     const spots = document.getElementById('spots');
     if (spots) spots.textContent = Math.max(1, parseInt(spots.textContent) - 1);
   }
